@@ -124,7 +124,8 @@ export class TableConstructor {
   _showToolBar(toolBar, coord) {
     this._hideToolBar();
     this._activatedToolBar = toolBar;
-    toolBar.showIn(coord);
+    const hideMinusBtn = this._isLastRowOrLastColumn();
+    toolBar.showIn(coord, hideMinusBtn);
   }
 
   /**
@@ -169,6 +170,25 @@ export class TableConstructor {
     });
   }
 
+
+  // 检查是否是底行、末列
+  _isLastRowOrLastColumn() {
+    if (this._hoveredCell === this._container) {
+      return true
+    } else {
+      if (this._hoveredCellSide === 'right') {
+        // 列
+        const row = this._hoveredCell.closest('TR');
+        return row.querySelector('td:last-child') === this._hoveredCell
+      } else if (this._hoveredCellSide === 'bottom') {
+        // 行
+        const row = this._hoveredCell.closest('TR');
+        return this._table.htmlElement.querySelector('tr:last-child') === row
+      }
+    }
+    return false
+  }
+
   /**
    * @private
    *
@@ -181,7 +201,6 @@ export class TableConstructor {
     const containerCoords = getCoords(this._table.htmlElement);
 
     this._hoveredCell = event.target.closest('TD');
-
     if (this._hoveredCell === null) {
       const paddingContainer = 11;
       this._hoveredCell = this._container;
@@ -213,7 +232,7 @@ export class TableConstructor {
    * @return {boolean}
    */
   _isToolbar(elem) {
-    return !!(elem.closest('.' + CSS.toolBarHor) || elem.closest('.' + CSS.toolBarVer));
+    return elem && !!(elem.closest('.' + CSS.toolBarHor) || elem.closest('.' + CSS.toolBarVer));
   }
 
   /**
@@ -259,13 +278,23 @@ export class TableConstructor {
     }
     let typeCoord;
 
+    const detail = event.detail || {};
     if (this._activatedToolBar === this._horizontalToolBar) {
-      this._addRow();
+      if (detail.type === 'plusButton') {
+        this._addRow();
+      } else if (detail.type === 'minusButton') {
+        this._removeRow();
+      }
       typeCoord = 'y';
     } else {
-      this._addColumn();
+      if (detail.type === 'plusButton') {
+        this._addColumn();
+      } else if (detail.type === 'minusButton') {
+        this._removeColumn();
+      }
       typeCoord = 'x';
     }
+
     /** If event has transmitted data (coords of mouse) */
     const detailHasData = isNaN(event.detail) && event.detail !== null;
 
@@ -336,21 +365,61 @@ export class TableConstructor {
     return this._hoveredCellSide === 'bottom' || this._hoveredCellSide === 'right';
   }
 
+  // 鼠标由外面进入容器时，_hoveredCell不是内部td，获取靠进的tr或td的index
+  _getIndexHoveredSideOfContainer() {
+    const tableDom = this._table._table
+    const rowsCount = tableDom.rows.length
+    const columsCount = tableDom.querySelectorAll('tr:first-child > td').length
+    let index = 0
+
+    switch (this._hoveredCellSide) {
+      case 'top':
+        index = 0
+        break;
+      case 'bottom':
+        index = rowsCount
+        break;
+      case 'left':
+        index = 0
+        break;
+      case 'right':
+        index = columsCount
+        break;
+    }
+    return index
+  }
+
   /**
    * Adds row in table
    * @private
    */
   _addRow() {
     const indicativeRow = this._hoveredCell.closest('TR');
-    let index = this._getHoveredSideOfContainer();
+    let index = this._getIndexHoveredSideOfContainer()
 
-    if (index === 1) {
+    if (indicativeRow) {
       index = indicativeRow.sectionRowIndex;
       // if inserting after hovered cell
       index = index + this._isBottomOrRight();
     }
-
     this._table.addRow(index);
+  }
+
+  /**
+  * Adds row in table
+  * @private
+  */
+  _removeRow() {
+    const indicativeRow = this._hoveredCell.closest('TR');
+    let index = this._getIndexHoveredSideOfContainer();
+    if (this._hoveredCellSide === 'bottom') index -= 1 ;
+
+    if (indicativeRow) {
+      index = indicativeRow.sectionRowIndex;
+      if (this._hoveredCellSide === 'bottom') index += 1
+    }
+
+    this._table.removeRow(index);
   }
 
   /**
@@ -359,15 +428,34 @@ export class TableConstructor {
    * Adds column in table
    */
   _addColumn() {
-    let index = this._getHoveredSideOfContainer();
+    const indicativeRow = this._hoveredCell.closest('TR');
+    let index = this._getIndexHoveredSideOfContainer();
 
-    if (index === 1) {
+    if (indicativeRow) {
       index = this._hoveredCell.cellIndex;
       // if inserting after hovered cell
       index = index + this._isBottomOrRight();
     }
 
     this._table.addColumn(index);
+  }
+
+  /**
+   * @private
+   *
+   * Adds column in table
+   */
+  _removeColumn() {
+    const indicativeRow = this._hoveredCell.closest('TR');
+    let index = this._getIndexHoveredSideOfContainer();
+    if (this._hoveredCellSide === 'right') index -= 1;
+
+    if (indicativeRow) {
+      index = this._hoveredCell.cellIndex;
+      if (this._hoveredCellSide === 'right') index += 1;
+    }
+
+    this._table.removeColumn(index);
   }
 
   /**
