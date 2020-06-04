@@ -68,13 +68,18 @@ class Table {
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
       const cols = Array.from(row.cells);
-      const inputs = cols.map(cell => cell.querySelector('.' + CSS.input));
-      const isWorthless = inputs.every(this._isEmpty);
 
-      if (isWorthless) {
-        continue;
-      }
-      data.push(cols.map(cell => cell.innerHTML));
+      // 不做空值处理
+      // const inputs = cols.map(cell => cell.querySelector('.' + CSS.input));
+      // const isWorthless = inputs.every(this._isEmpty);
+      // if (isWorthless) {
+      //   continue;
+      // }
+
+      data.push(cols.map(function(cell) {
+        const inputDom = cell.querySelector('.' + CSS.input)
+        return inputDom && inputDom.innerHTML || ''
+      }))
     }
 
     return {

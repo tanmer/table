@@ -42,6 +42,24 @@ export class Table {
   };
 
   /**
+   * Delete column in table on index place
+   * @param {number} index - number in the array of columns, where new column to insert,-1 if insert at the end
+   */
+  removeColumn(index = -1) {
+    if (index < 0) return
+    // 在最右侧列后面不可删除，没有删除的列
+    if (this._numberOfColumns <= 1 || this._numberOfColumns <= index) return
+
+    this._numberOfColumns--;
+    /** Remove cell in each row */
+    const rows = this._table.rows;
+
+    for (let i = 0; i < rows.length; i++) {
+      rows[i].deleteCell(index);
+    }
+  };
+
+  /**
    * Add row in table on index place
    * @param {number} index - number in the array of columns, where new column to insert,-1 if insert at the end
    * @return {HTMLElement} row
@@ -51,6 +69,21 @@ export class Table {
     const row = this._table.insertRow(index);
 
     this._fillRow(row);
+    return row;
+  };
+
+  /**
+   * Add row in table on index place
+   * @param {number} index - number in the array of columns, where new column to insert,-1 if insert at the end
+   * @return {HTMLElement} row
+   */
+  removeRow(index = -1) {
+    if (index < 0) return
+    // 在最底部一行后面不可删除，没有删除的行
+    if (this._numberOfRows <= 1 || this._numberOfRows <= index) return
+    this._numberOfRows--;
+    const row = this._table.deleteRow(index);
+
     return row;
   };
 

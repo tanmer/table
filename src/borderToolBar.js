@@ -1,5 +1,6 @@
 import './styles/border-toolbar.pcss';
 import svgPlusButton from './img/plus.svg';
+import svgMinusButton from './img/minus.svg';
 import {create} from './documentUtils';
 
 const CSS = {
@@ -10,8 +11,11 @@ const CSS = {
   verticalToolBar: 'tc-toolbar--ver',
   verticalHighlightingLine: 'tc-toolbar__shine-line--ver',
   plusButton: 'tc-toolbar__plus',
+  minusButton: 'tc-toolbar__minus',
   horizontalPlusButton: 'tc-toolbar__plus--hor',
   verticalPlusButton: 'tc-toolbar__plus--ver',
+  horizontalMinusButton: 'tc-toolbar__minus--hor',
+  verticalMinusButton: 'tc-toolbar__minus--ver',
   area: 'tc-table__area',
 };
 
@@ -24,8 +28,9 @@ class BorderToolBar {
    */
   constructor() {
     this._plusButton = this._generatePlusButton();
+    this._minusButton = this._generateMinusButton();
     this._highlightingLine = this._generateHighlightingLine();
-    this._toolbar = this._generateToolBar([this._plusButton, this._highlightingLine]);
+    this._toolbar = this._generateToolBar([this._plusButton, this._highlightingLine, this._minusButton]);
   }
 
   /**
@@ -41,6 +46,7 @@ class BorderToolBar {
   show() {
     this._toolbar.classList.remove(CSS.hidden);
     this._highlightingLine.classList.remove(CSS.hidden);
+    this._minusButton.classList.remove(CSS.hidden);
   };
 
   /**
@@ -48,6 +54,13 @@ class BorderToolBar {
    */
   hideLine() {
     this._highlightingLine.classList.add(CSS.hidden);
+  };
+
+  /**
+   * Hide only highlightingLine
+   */
+  hideMinusButton() {
+    this._minusButton.classList.add(CSS.hidden);
   };
 
   /**
@@ -68,7 +81,14 @@ class BorderToolBar {
     button.innerHTML = svgPlusButton;
     button.addEventListener('click', (event) => {
       event.stopPropagation();
-      const e = new CustomEvent('click', {'detail': {'x': event.pageX, 'y': event.pageY}, 'bubbles': true});
+      const e = new CustomEvent('click', {
+        'detail':{
+          'type': 'plusButton',
+          'x': event.pageX,
+          'y': event.pageY
+        },
+        'bubbles': true
+      });
 
       this._toolbar.dispatchEvent(e);
     });
@@ -85,11 +105,42 @@ class BorderToolBar {
 
     line.addEventListener('click', (event) => {
       event.stopPropagation();
-      const e = new CustomEvent('click', {'bubbles': true});
+      const e = new CustomEvent('click', {
+        'detail':{
+          'type': 'line',
+          'x': event.pageX,
+          'y': event.pageY
+        },
+        'bubbles': true
+      });
 
       this._toolbar.dispatchEvent(e);
     });
     return line;
+  }
+
+  /**
+   * Generates a menu button to add rows and columns.
+   * @return {HTMLElement}
+   */
+  _generateMinusButton() {
+    const button = create('div', [CSS.minusButton]);
+
+    button.innerHTML = svgMinusButton;
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const e = new CustomEvent('click', {
+        'detail':{
+          'type': 'minusButton',
+          'x': event.pageX,
+          'y': event.pageY
+        },
+        'bubbles': true
+      });
+
+      this._toolbar.dispatchEvent(e);
+    });
+    return button;
   }
 
   /**
@@ -138,18 +189,21 @@ export class HorizontalBorderToolBar extends BorderToolBar {
 
     this._toolbar.classList.add(CSS.horizontalToolBar);
     this._plusButton.classList.add(CSS.horizontalPlusButton);
+    this._minusButton.classList.add(CSS.horizontalMinusButton);
     this._highlightingLine.classList.add(CSS.horizontalHighlightingLine);
   }
 
   /**
    * Move ToolBar to y coord
    * @param {number} y - coord
+   * @param {boolean} hideMinusBtn
    */
-  showIn(y) {
+  showIn(y, hideMinusBtn = false) {
     const halfHeight = Math.floor(Number.parseInt(window.getComputedStyle(this._toolbar).height) / 2);
 
     this._toolbar.style.top = (y - halfHeight) + 'px';
     this.show();
+    if (hideMinusBtn) this.hideMinusButton();
   }
 }
 
@@ -165,17 +219,20 @@ export class VerticalBorderToolBar extends BorderToolBar {
 
     this._toolbar.classList.add(CSS.verticalToolBar);
     this._plusButton.classList.add(CSS.verticalPlusButton);
+    this._minusButton.classList.add(CSS.verticalMinusButton);
     this._highlightingLine.classList.add(CSS.verticalHighlightingLine);
   }
 
   /**
    * Move ToolBar to x coord
    * @param {number} x - coord
+   * @param {boolean} hideMinusBtn
    */
-  showIn(x) {
+  showIn(x, hideMinusBtn = false) {
     const halfWidth = Math.floor(Number.parseInt(window.getComputedStyle(this._toolbar).width) / 2);
 
     this._toolbar.style.left = (x - halfWidth) + 'px';
     this.show();
+    if (hideMinusBtn) this.hideMinusButton();
   }
 }
