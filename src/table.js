@@ -1,4 +1,4 @@
-import {create, getCoords, getSideByCoords} from './documentUtils';
+import { create, getCoords, getSideByCoords } from './documentUtils';
 import './styles/table.pcss';
 
 const CSS = {
@@ -15,18 +15,24 @@ const CSS = {
 export class Table {
   /**
    * Creates
+   *
+   * @param {boolean} readOnly - read-only mode flag
    */
-  constructor() {
+  constructor(readOnly) {
+    this.readOnly = readOnly;
     this._numberOfColumns = 0;
     this._numberOfRows = 0;
     this._element = this._createTableWrapper();
     this._table = this._element.querySelector('table');
 
-    this._hangEvents();
+    if (!this.readOnly) {
+      this._hangEvents();
+    }
   }
 
   /**
    * Add column in table on index place
+   *
    * @param {number} index - number in the array of columns, where new column to insert,-1 if insert at the end
    */
   addColumn(index = -1) {
@@ -61,21 +67,23 @@ export class Table {
 
   /**
    * Add row in table on index place
+   *
    * @param {number} index - number in the array of columns, where new column to insert,-1 if insert at the end
-   * @return {HTMLElement} row
+   * @returns {HTMLElement} row
    */
   addRow(index = -1) {
     this._numberOfRows++;
     const row = this._table.insertRow(index);
 
     this._fillRow(row);
+
     return row;
   };
 
   /**
    * Add row in table on index place
    * @param {number} index - number in the array of columns, where new column to insert,-1 if insert at the end
-   * @return {HTMLElement} row
+   * @returns {HTMLElement} row
    */
   removeRow(index = -1) {
     if (index < 0) return
@@ -89,7 +97,8 @@ export class Table {
 
   /**
    * get html element of table
-   * @return {HTMLElement}
+   *
+   * @returns {HTMLElement}
    */
   get htmlElement() {
     return this._element;
@@ -97,7 +106,8 @@ export class Table {
 
   /**
    * get real table tag
-   * @return {HTMLElement}
+   *
+   * @returns {HTMLElement}
    */
   get body() {
     return this._table;
@@ -105,7 +115,8 @@ export class Table {
 
   /**
    * returns selected/editable cell
-   * @return {HTMLElement}
+   *
+   * @returns {HTMLElement}
    */
   get selectedCell() {
     return this._selectedCell;
@@ -115,7 +126,7 @@ export class Table {
    * @private
    *
    * Creates table structure
-   * @return {HTMLElement} tbody - where rows will be
+   * @returns {HTMLElement} tbody - where rows will be
    */
   _createTableWrapper() {
     return create('div', [CSS.wrapper], null, [create('table', [CSS.table])]);
@@ -125,7 +136,7 @@ export class Table {
    * @private
    *
    * Create editable area of cell
-   * @return {HTMLElement} - the area
+   * @returns {HTMLElement} - the area
    */
   _createContenteditableArea() {
     return create('div', [CSS.inputField], {contenteditable: 'true'});

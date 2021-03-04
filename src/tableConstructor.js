@@ -19,10 +19,13 @@ export class TableConstructor {
    * @param {TableData} data - previously saved data for insert in table
    * @param {object} config - configuration of table
    * @param {object} api - Editor.js API
+   * @param {boolean} readOnly - read-only mode flag
    */
-  constructor(data, config, api) {
+  constructor(data, config, api, readOnly) {
+    this.readOnly = readOnly;
+
     /** creating table */
-    this._table = new Table();
+    this._table = new Table(readOnly);
     const size = this._resizeTable(data, config);
 
     this._fillTable(data, size);
@@ -45,7 +48,9 @@ export class TableConstructor {
     this._plusButDelay = null;
     this._toolbarShowDelay = null;
 
-    this._hangEvents();
+    if (!this.readOnly) {
+      this._hangEvents();
+    }
   }
 
   /**
@@ -98,8 +103,8 @@ export class TableConstructor {
     const configCols = !isNaN(parsedCols) && parsedCols > 0 ? parsedCols : undefined;
     const defaultRows = 2;
     const defaultCols = 2;
-    const rows = configRows || contentRows || defaultRows;
-    const cols = configCols || contentCols || defaultCols;
+    const rows = contentRows || configRows || defaultRows;
+    const cols = contentCols || configCols || defaultCols;
 
     for (let i = 0; i < rows; i++) {
       this._table.addRow();
