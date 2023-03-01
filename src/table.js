@@ -1,12 +1,15 @@
-import svgPlusButton from './img/plus.svg';
 import Toolbox from './toolbox';
-import newToLeftIcon from './img/new-to-left.svg';
-import newToRightIcon from './img/new-to-right.svg';
-import newToUpIcon from './img/new-to-up.svg';
-import newToDownIcon from './img/new-to-down.svg';
-import closeIcon from './img/cross.svg';
 import * as $ from './utils/dom';
 import throttled from './utils/throttled';
+
+import {
+  IconDirectionLeftDown,
+  IconDirectionRightDown,
+  IconDirectionUpRight,
+  IconDirectionDownRight,
+  IconCross,
+  IconPlus
+} from '@codexteam/icons';
 
 const CSS = {
   wrapper: 'tc-wrap',
@@ -166,7 +169,7 @@ export default class Table {
       items: [
         {
           label: this.api.i18n.t('Add column to left'),
-          icon: newToLeftIcon,
+          icon: IconDirectionLeftDown,
           onClick: () => {
             this.addColumn(this.selectedColumn, true);
             this.hideToolboxes();
@@ -174,7 +177,7 @@ export default class Table {
         },
         {
           label: this.api.i18n.t('Add column to right'),
-          icon: newToRightIcon,
+          icon: IconDirectionRightDown,
           onClick: () => {
             this.addColumn(this.selectedColumn + 1, true);
             this.hideToolboxes();
@@ -182,7 +185,7 @@ export default class Table {
         },
         {
           label: this.api.i18n.t('Delete column'),
-          icon: closeIcon,
+          icon: IconCross,
           hideIf: () => {
             return this.numberOfColumns === 1;
           },
@@ -215,7 +218,7 @@ export default class Table {
       items: [
         {
           label: this.api.i18n.t('Add row above'),
-          icon: newToUpIcon,
+          icon: IconDirectionUpRight,
           onClick: () => {
             this.addRow(this.selectedRow, true);
             this.hideToolboxes();
@@ -223,7 +226,7 @@ export default class Table {
         },
         {
           label: this.api.i18n.t('Add row below'),
-          icon: newToDownIcon,
+          icon: IconDirectionDownRight,
           onClick: () => {
             this.addRow(this.selectedRow + 1, true);
             this.hideToolboxes();
@@ -231,7 +234,7 @@ export default class Table {
         },
         {
           label: this.api.i18n.t('Delete row'),
-          icon: closeIcon,
+          icon: IconCross,
           hideIf: () => {
             return this.numberOfRows === 1;
           },
@@ -276,7 +279,7 @@ export default class Table {
    * @returns {HTMLElement}
    */
   getCell(row, column) {
-    return this.table.querySelector(`.${CSS.row}:nth-child(${row}) .${CSS.cell}:nth-child(${column})`);
+    return this.table.querySelectorAll(`.${CSS.row}:nth-child(${row}) .${CSS.cell}`)[column - 1];
   }
 
   /**
@@ -488,10 +491,10 @@ export default class Table {
 
     if (!this.readOnly) {
       const addColumnButton = $.make('div', CSS.addColumn, {
-        innerHTML: svgPlusButton
+        innerHTML: IconPlus
       });
       const addRowButton = $.make('div', CSS.addRow, {
-        innerHTML: svgPlusButton
+        innerHTML: IconPlus
       });
 
       this.wrapper.appendChild(addColumnButton);
@@ -600,7 +603,7 @@ export default class Table {
    */
   get numberOfColumns() {
     if (this.numberOfRows) {
-      return this.table.querySelector(`.${CSS.row}:first-child`).childElementCount;
+      return this.table.querySelectorAll(`.${CSS.row}:first-child .${CSS.cell}`).length;
     }
 
     return 0;
@@ -754,7 +757,7 @@ export default class Table {
     }
 
     if (!this.isRowMenuShowing) {
-      if (row > 0 && column <= this.numberOfColumns) { // not sure this statement is needed. Maybe it should be fixed in getHoveredCell()
+      if (row > 0 && row <= this.numberOfRows) { // not sure this statement is needed. Maybe it should be fixed in getHoveredCell()
         this.toolboxRow.show(() => {
           const hoveredRowElement = this.getRow(row);
           const { fromTopBorder } = $.getRelativeCoordsOfTwoElems(this.table, hoveredRowElement);
