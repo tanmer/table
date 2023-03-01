@@ -2,6 +2,7 @@
   "name": "@editorjs/table",
   "description": "Table for Editor.js",
   "version": "2.2.1",
+  "tanmer-version": "2.0.1",
   "license": "MIT",
   "main": "./dist/table.js",
   "scripts": {

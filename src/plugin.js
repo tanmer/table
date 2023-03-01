@@ -130,8 +130,27 @@ export default class TableBlock {
    *
    * @returns {TableData} - saved data
    */
-  save() {
-    const tableContent = this.table.getData();
+  save(toolsContent) {
+    const table = toolsContent.querySelector('table');
+    const data = [];
+    const rows = table.rows;
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const cols = Array.from(row.cells);
+
+      // 不做空值处理
+      // const inputs = cols.map(cell => cell.querySelector('.' + CSS.input));
+      // const isWorthless = inputs.every(this._isEmpty);
+      // if (isWorthless) {
+      //   continue;
+      // }
+
+      data.push(cols.map(function(cell) {
+        const inputDom = cell.querySelector('.' + CSS.input)
+        return inputDom && inputDom.innerHTML || ''
+      }))
+    }
 
     const result = {
       withHeadings: this.data.withHeadings,
